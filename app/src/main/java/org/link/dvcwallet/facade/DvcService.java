@@ -1,4 +1,4 @@
-package org.link.dvcwallet.core;
+package org.link.dvcwallet.facade;
 
 import android.content.Context;
 
