@@ -36,7 +36,7 @@ public class AsyncExecutorImpl implements AsyncExcutor {
 
     private AsyncExecutorImpl(){}
 
-    private AsyncExecutorImpl(Context context, AsyncJob func1, AsyncCallBack func2){
+    public AsyncExecutorImpl(Context context, AsyncJob func1, AsyncCallBack func2){
         this.mContext = context;
         this.job = func1;
         this.callBack = func2;

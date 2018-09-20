@@ -3,9 +3,12 @@ package org.link.dvcwallet;
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.annotation.TargetApi;
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.support.annotation.NonNull;
 import android.support.design.widget.Snackbar;
+import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.app.LoaderManager.LoaderCallbacks;
 
@@ -29,8 +32,15 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 
+import org.link.dvcwallet.core.DvcServiceImpl;
+import org.link.dvcwallet.core.beans.DvcReceipt;
+import org.link.dvcwallet.facade.asyncjob.AsyncCallBack;
+import org.link.dvcwallet.facade.asyncjob.AsyncJob;
+import org.link.dvcwallet.utils.AsyncExecutorImpl;
+
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import static android.Manifest.permission.READ_CONTACTS;
 
@@ -62,33 +72,27 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
     private View mProgressView;
     private View mLoginFormView;
 
+    SharedPreferences.Editor sharePreferencesEditor;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
         // Set up the login form.
-        mEmailView = (AutoCompleteTextView) findViewById(R.id.email);
+        mEmailView = findViewById(R.id.email);
         populateAutoComplete();
 
-        mPasswordView = (EditText) findViewById(R.id.password);
-        mPasswordView.setOnEditorActionListener(new TextView.OnEditorActionListener() {
-            @Override
-            public boolean onEditorAction(TextView textView, int id, KeyEvent keyEvent) {
-                if (id == EditorInfo.IME_ACTION_DONE || id == EditorInfo.IME_NULL) {
-                    attemptLogin();
-                    return true;
-                }
-                return false;
+        mPasswordView = findViewById(R.id.password);
+        mPasswordView.setOnEditorActionListener((textView, id, keyEvent) -> {
+            if (id == EditorInfo.IME_ACTION_DONE || id == EditorInfo.IME_NULL) {
+                attemptCreateWallet();
+                return true;
             }
+            return false;
         });
 
-        Button mEmailSignInButton = (Button) findViewById(R.id.email_sign_in_button);
-        mEmailSignInButton.setOnClickListener(new OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                attemptLogin();
-            }
-        });
+        Button mEmailSignInButton = findViewById(R.id.email_sign_in_button);
+        mEmailSignInButton.setOnClickListener(view -> attemptCreateWallet());
 
         mLoginFormView = findViewById(R.id.login_form);
         mProgressView = findViewById(R.id.login_progress);
@@ -111,13 +115,7 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
         }
         if (shouldShowRequestPermissionRationale(READ_CONTACTS)) {
             Snackbar.make(mEmailView, R.string.permission_rationale, Snackbar.LENGTH_INDEFINITE)
-                    .setAction(android.R.string.ok, new View.OnClickListener() {
-                        @Override
-                        @TargetApi(Build.VERSION_CODES.M)
-                        public void onClick(View v) {
-                            requestPermissions(new String[]{READ_CONTACTS}, REQUEST_READ_CONTACTS);
-                        }
-                    });
+                    .setAction(android.R.string.ok, v -> requestPermissions(new String[]{READ_CONTACTS}, REQUEST_READ_CONTACTS));
         } else {
             requestPermissions(new String[]{READ_CONTACTS}, REQUEST_READ_CONTACTS);
         }
@@ -134,10 +132,40 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
             if (grantResults.length == 1 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                 populateAutoComplete();
             }
+        } else if (requestCode == 1) {
+//            AsyncExecutorImpl asyncExecutor = new AsyncExecutorImpl(LoginActivity.this,
+//                    () -> {
+//
+//                    }, new AsyncCallBack() {
+//                @Override
+//                public void onSuccess(String msg) {
+//
+//                }
+//
+//                @Override
+//                public void onFaild(String msg) {
+//
+//                }
+//            });
+            String name = mEmailView.getText().toString();
+            String password = mPasswordView.getText().toString();
+            DvcReceipt result =  new DvcServiceImpl(LoginActivity.this).createWallet(password);
+            if(!result.getStatus()) return;
+            String address = result.getAddress();
+            String walletPath = result.getWalletPath();
+            SharedPreferences sharedPreferences = getSharedPreferences("config", Context.MODE_PRIVATE);
+            sharePreferencesEditor = sharedPreferences.edit();
+            sharePreferencesEditor.putString("name", name);
+            sharePreferencesEditor.putString("address", address);
+            sharePreferencesEditor.putString("accountFilePath", walletPath);
+            sharePreferencesEditor.commit();
         }
     }
 
-
+    private void attemptCreateWallet() {
+        ActivityCompat.requestPermissions(LoginActivity.this, new String[]{android
+                .Manifest.permission.WRITE_EXTERNAL_STORAGE}, 1);
+    }
     /**
      * Attempts to sign in or register the account specified by the login form.
      * If there are form errors (invalid email, missing fields, etc.), the

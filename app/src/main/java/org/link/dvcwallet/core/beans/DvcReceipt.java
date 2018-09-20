@@ -8,7 +8,7 @@ import org.web3j.crypto.ECKeyPair;
 
 public class DvcReceipt {
 
-    private Boolean status;
+    private Boolean status = true;
     private String address;
     private String walletPath;
     private String privateKey;
