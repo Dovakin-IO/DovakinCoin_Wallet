@@ -3,6 +3,7 @@ package org.link.dvcwallet.utils;
 import android.content.Context;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.Looper;
 import android.os.Message;
 
 import org.link.dvcwallet.facade.asyncjob.AsyncCallBack;
@@ -30,7 +31,9 @@ public class AsyncExecutorImpl implements AsyncExcutor {
             Bundle bundle = msg.getData();
             String result = bundle.getString("result");
             loading.dismiss();
-            callBack.onSuccess(result);
+            Looper.prepare();
+            callBack.onResult(result);
+            Looper.loop();
         }
     };
 
@@ -41,7 +44,7 @@ public class AsyncExecutorImpl implements AsyncExcutor {
         this.job = func1;
         this.callBack = func2;
 
-        loading = new LoadingDialog(mContext);
+        loading = new LoadingDialog(mContext, "加载中...");
         loading.setCanceledOnTouchOutside(false);
         loading.setCancelable(false);
     }
@@ -64,9 +67,9 @@ public class AsyncExecutorImpl implements AsyncExcutor {
             Bundle bundle = new Bundle();
             bundle.putString("result", result);
             message.setData(bundle);
+            handler.handleMessage(message);
         };
-        loading.setLoadingInfo("加载中...")
-                .show();
+        loading.show();
         new Thread(runnable).start();
     }
 }

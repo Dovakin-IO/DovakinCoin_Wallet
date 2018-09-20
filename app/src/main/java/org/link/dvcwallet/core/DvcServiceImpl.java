@@ -1,15 +1,20 @@
 package org.link.dvcwallet.core;
 
 import android.content.Context;
+import android.widget.Toast;
 
 import org.link.dvcwallet.core.beans.DvcReceipt;
 import org.link.dvcwallet.core.beans.GlobalConfig;
 import org.link.dvcwallet.facade.DvcService;
+import org.link.dvcwallet.facade.asyncjob.AsyncCallBack;
+import org.link.dvcwallet.utils.AsyncExecutorImpl;
 import org.web3j.crypto.CipherException;
 import org.web3j.crypto.Credentials;
 import org.web3j.crypto.ECKeyPair;
 import org.web3j.crypto.Keys;
 import org.web3j.crypto.WalletUtils;
+import org.web3j.protocol.Web3j;
+import org.web3j.protocol.http.HttpService;
 
 import java.io.File;
 import java.io.IOException;
@@ -27,10 +32,28 @@ import io.github.novacrypto.hashing.Sha256;
  * Created by liuhuanchao on 2018/9/20.
  */
 
-public class DvcServiceImpl extends DvcService<DvcReceipt> {
+public class DvcServiceImpl extends DvcService<DvcReceipt> implements AsyncCallBack {
 
     public DvcServiceImpl(Context context) {
         super(context);
+    }
+
+    @Override
+    public Web3j connectPeer(String host) {
+        Web3j web3j = Web3j.build(new HttpService(host));
+        final Boolean[] isConnected = new Boolean[1];
+        new AsyncExecutorImpl(this.mContext,
+                () -> {
+                    String clientInfo = null;
+                    try {
+                        clientInfo = web3j.web3ClientVersion().send().getWeb3ClientVersion();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                    return clientInfo;
+                },
+                this).excute();
+        return web3j;
     }
 
     @Override
@@ -130,5 +153,10 @@ public class DvcServiceImpl extends DvcService<DvcReceipt> {
         }
         if (fileName == null) {dvcReceipt.setStatus(false); return;}
         dvcReceipt.setWalletPath(GlobalConfig.walletFilePath + File.separator + fileName);
+    }
+
+    @Override
+    public void onResult(String msg) {
+        Toast.makeText(mContext, "连接成功", Toast.LENGTH_LONG).show();
     }
 }

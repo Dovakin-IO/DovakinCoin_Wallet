@@ -37,6 +37,7 @@ import org.link.dvcwallet.core.beans.DvcReceipt;
 import org.link.dvcwallet.facade.asyncjob.AsyncCallBack;
 import org.link.dvcwallet.facade.asyncjob.AsyncJob;
 import org.link.dvcwallet.utils.AsyncExecutorImpl;
+import org.web3j.protocol.Web3j;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -81,6 +82,8 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
         // Set up the login form.
         mEmailView = findViewById(R.id.email);
         populateAutoComplete();
+
+        Web3j web3j = new DvcServiceImpl(LoginActivity.this).connectPeer("http://192.168.0.103:8545");
 
         mPasswordView = findViewById(R.id.password);
         mPasswordView.setOnEditorActionListener((textView, id, keyEvent) -> {

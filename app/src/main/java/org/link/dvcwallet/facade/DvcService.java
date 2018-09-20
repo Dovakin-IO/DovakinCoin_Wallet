@@ -2,19 +2,27 @@ package org.link.dvcwallet.facade;
 
 import android.content.Context;
 
+import org.web3j.protocol.Web3j;
+
 /**
  * Created by liuhuanchao on 2018/9/20.
  */
 
 public abstract class DvcService<T> {
 
-    private Context mContext;
+    protected Context mContext;
 
     private DvcService(){}
 
     public DvcService(Context context){
         this.mContext = context;
     }
+
+    /**
+     * 连接以太坊节点
+     * @return
+     */
+    public abstract Web3j connectPeer(String address);
 
     /**
      * 创建钱包

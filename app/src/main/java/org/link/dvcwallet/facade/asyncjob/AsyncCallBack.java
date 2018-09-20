@@ -6,7 +6,6 @@ package org.link.dvcwallet.facade.asyncjob;
 
 public interface AsyncCallBack {
 
-    public void onSuccess(String msg);
+    public void onResult(String msg);
 
-    public void onFaild(String msg);
 }
