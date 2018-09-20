@@ -27,6 +27,23 @@ dependencies {
     implementation 'com.android.support:appcompat-v7:26.1.0'
     implementation 'com.android.support:design:26.1.0'
     implementation 'com.android.support:support-annotations:27.1.1'
+    // Web3j
+    implementation 'org.web3j:core:3.5.0'
+    // https://mvnrepository.com/artifact/io.github.novacrypto/ToRuntime
+    implementation group: 'io.github.novacrypto', name: 'ToRuntime', version: '0.9.0'
+    // https://mvnrepository.com/artifact/io.github.novacrypto/BIP44
+    implementation group: 'io.github.novacrypto', name: 'BIP44', version: '0.0.2'
+    // https://mvnrepository.com/artifact/io.github.novacrypto/BIP39
+    implementation group: 'io.github.novacrypto', name: 'BIP39', version: '0.1.8'
+    // https://mvnrepository.com/artifact/io.github.novacrypto/BIP32
+    implementation group: 'io.github.novacrypto', name: 'BIP32', version: '0.0.8'
+    // https://mvnrepository.com/artifact/io.github.novacrypto/SHA256
+    implementation group: 'io.github.novacrypto', name: 'SHA256', version: '0.0.1'
+    // https://mvnrepository.com/artifact/com.madgag.spongycastle/core
+    implementation group: 'com.madgag.spongycastle', name: 'core', version: '1.58.0.0'
+    // https://mvnrepository.com/artifact/com.lambdaworks/scrypt
+    implementation group: 'com.lambdaworks', name: 'scrypt', version: '1.4.0'
+
     testImplementation 'junit:junit:4.12'
     androidTestImplementation 'com.android.support.test:runner:1.0.2'
     androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.2'

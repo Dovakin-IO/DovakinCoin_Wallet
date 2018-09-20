@@ -36,7 +36,7 @@ public abstract class DvcService<T> {
      * @param mnemonic
      * @return
      */
-    public abstract T loadWalletByMnemonic(String mnemonic);
+    public abstract T loadWalletByMnemonic(String password, String mnemonic);
 
     /**
      * 导出钱包
