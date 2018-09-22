@@ -4,6 +4,7 @@ import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.annotation.TargetApi;
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.support.annotation.NonNull;
@@ -22,26 +23,26 @@ import android.os.Build;
 import android.os.Bundle;
 import android.provider.ContactsContract;
 import android.text.TextUtils;
-import android.view.KeyEvent;
+import android.util.Log;
 import android.view.View;
-import android.view.View.OnClickListener;
 import android.view.inputmethod.EditorInfo;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.TextView;
+import android.widget.Toast;
 
+import org.link.dvcwallet.core.BlockChainServiceImpl;
 import org.link.dvcwallet.core.DvcServiceImpl;
 import org.link.dvcwallet.core.beans.DvcReceipt;
-import org.link.dvcwallet.facade.asyncjob.AsyncCallBack;
-import org.link.dvcwallet.facade.asyncjob.AsyncJob;
-import org.link.dvcwallet.utils.AsyncExecutorImpl;
+import org.link.dvcwallet.core.beans.GlobalConfig;
+import org.link.dvcwallet.utils.GlobalCache;
 import org.web3j.protocol.Web3j;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
+
+import rx.Subscription;
 
 import static android.Manifest.permission.READ_CONTACTS;
 
@@ -72,6 +73,7 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
     private EditText mPasswordView;
     private View mProgressView;
     private View mLoginFormView;
+    private Web3j web3j;
 
     SharedPreferences.Editor sharePreferencesEditor;
 
@@ -83,7 +85,18 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
         mEmailView = findViewById(R.id.email);
         populateAutoComplete();
 
-        Web3j web3j = new DvcServiceImpl(LoginActivity.this).connectPeer("http://192.168.0.103:8545");
+        web3j = new DvcServiceImpl(LoginActivity.this).connectPeer(GlobalConfig.peer_address);
+        if (web3j != null) {
+            GlobalCache.web3j = web3j;
+        }
+
+        String address = getSharedPreferences("config", Context.MODE_PRIVATE).getString("address", "");
+        if (!address.equals("")){
+            new BlockChainServiceImpl(address).subscribBlock();
+            Intent intent = new Intent();
+            intent.setClass(LoginActivity.this, WalletActivity.class);
+            startActivity(intent);
+        }
 
         mPasswordView = findViewById(R.id.password);
         mPasswordView.setOnEditorActionListener((textView, id, keyEvent) -> {
@@ -136,20 +149,6 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
                 populateAutoComplete();
             }
         } else if (requestCode == 1) {
-//            AsyncExecutorImpl asyncExecutor = new AsyncExecutorImpl(LoginActivity.this,
-//                    () -> {
-//
-//                    }, new AsyncCallBack() {
-//                @Override
-//                public void onSuccess(String msg) {
-//
-//                }
-//
-//                @Override
-//                public void onFaild(String msg) {
-//
-//                }
-//            });
             String name = mEmailView.getText().toString();
             String password = mPasswordView.getText().toString();
             DvcReceipt result =  new DvcServiceImpl(LoginActivity.this).createWallet(password);
@@ -162,6 +161,11 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
             sharePreferencesEditor.putString("address", address);
             sharePreferencesEditor.putString("accountFilePath", walletPath);
             sharePreferencesEditor.commit();
+//            if (getSharedPreferences("config", Context.MODE_PRIVATE).contains("name")){
+                Intent intent = new Intent();
+                intent.setClass(LoginActivity.this, WalletActivity.class);
+                startActivity(intent);
+//            }
         }
     }
 

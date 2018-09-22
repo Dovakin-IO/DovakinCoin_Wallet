@@ -8,6 +8,8 @@ import android.content.SharedPreferences;
 
 public class GlobalConfig {
 
+    public static String peer_address = "http://192.168.0.102:8545";
+
     public static String walletFilePath = "/mnt/sdcard/dvc/keystore/";
 
 }
